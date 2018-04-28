@@ -1,11 +1,11 @@
 <?php
 include_once 'db.php';
 
-if (empty($_POST['cmd'])) {
+if (empty($_REQUEST['cmd'])) {
     echo 'Not have in request cmd param';
 }
 
-switch ($_POST['cmd']) {
+switch ($_REQUEST['cmd']) {
     case 'add':
         add($db);
         break;
@@ -22,7 +22,7 @@ switch ($_POST['cmd']) {
 
 function add($db) {
     $res = $db->prepare('INSERT INTO url (full, cut) VALUES (?,?)');
-    if (!$res->execute([$_POST['full'], $_POST['cut']])) {
+    if (!$res->execute([$_REQUEST['full'], $_REQUEST['cut']])) {
         throw new Exception("Not add", 500);
     }
     echo 'Success';
@@ -30,14 +30,14 @@ function add($db) {
 
 function edit($db) {
     $res = $db->prepare('UPDATE url SET cut = ? WHERE full = ?');
-    if (!$res->execute([$_POST['cut'], $_POST['full']])) {
+    if (!$res->execute([$_REQUEST['cut'], $_REQUEST['full']])) {
         throw new Exception("Not edit", 500);
     }
     echo 'Success';
 }
 
 function search($db) {
-    $res = $db->prepare("SELECT full, cut FROM url WHERE full LIKE %{$_POST['full']}}%");
+    $res = $db->prepare("SELECT full, cut FROM url WHERE full LIKE %{$_REQUEST['full']}}%");
     if (!$res->execute()) {
         throw new Exception("Not search", 500);
     }
