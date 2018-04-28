@@ -2,7 +2,7 @@
 include_once 'db.php';
 
 if (empty($_REQUEST['cmd'])) {
-    echo 'Not have in request cmd param';
+    echo json_encode(['msg' => 'Not have cmd param in request', 'GET' => $_GET, 'POST' => $_POST, 'REUQEST' => $_REQUEST]);
 }
 
 switch ($_REQUEST['cmd']) {
