@@ -1,6 +1,10 @@
 <?php
 include_once 'db.php';
 
+if (empty($_POST['cmd'])) {
+    echo 'Not have in request cmd param';
+}
+
 switch ($_POST['cmd']) {
     case 'add':
         add($db);
@@ -21,6 +25,7 @@ function add($db) {
     if (!$res->execute([$_POST['full'], $_POST['cut']])) {
         throw new Exception("Not add", 500);
     }
+    echo 'Success';
 }
 
 function edit($db) {
@@ -28,6 +33,7 @@ function edit($db) {
     if (!$res->execute([$_POST['cut'], $_POST['full']])) {
         throw new Exception("Not edit", 500);
     }
+    echo 'Success';
 }
 
 function search($db) {
