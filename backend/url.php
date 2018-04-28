@@ -47,4 +47,4 @@ function search($db) {
     echo json_encode(empty($rows) ? [] : $rows);
 }
 
-echo  json_encode(['GET' => $_GET, 'POST' => $_POST, 'REUQEST' => $_REQUEST]);
+echo  json_encode(['GET' => var_dump($_GET), 'POST' => var_dump($_POST), 'REUQEST' => var_dump($_REQUEST)]);
