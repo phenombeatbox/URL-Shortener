@@ -5,7 +5,9 @@ if (empty($_REQUEST['cmd'])) {
     echo json_encode(['msg' => 'Not have cmd param in request', 'GET' => $_GET, 'POST' => $_POST, 'REUQEST' => $_REQUEST]);
 }
 
-switch ($_REQUEST['cmd']) {
+$cmd  =  $_REQUEST['cmd'];
+
+switch ($cmd) {
     case 'add':
         add($db);
         break;
@@ -15,31 +17,38 @@ switch ($_REQUEST['cmd']) {
     case 'search':
         search($db);
         break;
+    default: 
+        echo 'Not found cmd';
+        return;
 }
 
 
 
 
 function add($db) {
-    $res = $db->prepare('INSERT INTO url (full, cut) VALUES (?,?)');
+    $res = $db->prepare('INSERT INTO url (full_url, cut_url) VALUES (?,?)');
     if (!$res->execute([$_REQUEST['full'], $_REQUEST['cut']])) {
-        throw new Exception("Not add", 500);
+        echo json_encode($res->errorInfo());
+        return;
     }
     echo 'Success';
 }
 
 function edit($db) {
-    $res = $db->prepare('UPDATE url SET cut = ? WHERE full = ?');
+    $res = $db->prepare('UPDATE url SET cut_url = ? WHERE full_url = ?');
     if (!$res->execute([$_REQUEST['cut'], $_REQUEST['full']])) {
-        throw new Exception("Not edit", 500);
+        echo json_encode($res->errorInfo());
+        return;
     }
     echo 'Success';
 }
 
 function search($db) {
-    $res = $db->prepare("SELECT full, cut FROM url WHERE full LIKE %{$_REQUEST['full']}}%");
+    $search_text = $_REQUEST['full'];
+    $res = $db->prepare("SELECT full_url, cut_url FROM url WHERE full_url LIKE '%$search_text%'");
     if (!$res->execute()) {
-        throw new Exception("Not search", 500);
+        echo json_encode($res->errorInfo());
+        return;
     }
 
     $rows = $res->fetchAll();
@@ -47,4 +56,4 @@ function search($db) {
     echo json_encode(empty($rows) ? [] : $rows);
 }
 
-echo  json_encode(['GET' => var_dump($_GET), 'POST' => var_dump($_POST), 'REUQEST' => var_dump($_REQUEST)]);
+//echo  json_encode(['GET' => var_dump($_GET), 'POST' => var_dump($_POST), 'REUQEST' => var_dump($_REQUEST)]);
