@@ -1,0 +1,28 @@
+<html>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="./config.js"></script>
+<script>
+    const { pathname } = window.location;
+    const cut_url = pathname.substr(15);
+
+    $.ajax({
+        url: `${BASE_URL}/backend/url.php`,
+        data: `cmd=get_full_url&cut_url=${BASE_URL}/${cut_url}`,
+        success: (response) => {
+            const result = JSON.parse(response);
+            console.log(result);
+            if (result.length === 0) {
+                console.log(result);
+                window.location.replace(BASE_URL);
+                return;
+            }
+
+            const full_url = result[0]['full_url'];
+
+            window.location.replace(full_url.search('http') === -1 ? `http://${full_url}` : full_url);
+        }
+    });
+
+</script>
+
+</html>

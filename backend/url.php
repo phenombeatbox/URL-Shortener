@@ -8,6 +8,9 @@ if (empty($_REQUEST['cmd'])) {
 $cmd  =  $_REQUEST['cmd'];
 
 switch ($cmd) {
+    case 'update':
+        update($db);
+        break;
     case 'add':
         add($db);
         break;
@@ -17,12 +20,31 @@ switch ($cmd) {
     case 'search':
         search($db);
         break;
+    case 'get_full_url': 
+        getFullUrl($db);
+        break;
     default: 
         echo 'Not found cmd';
         return;
 }
 
+function update($db) {
+    $full = $_REQUEST['full'];
+    $res = $db->prepare("SELECT full_url FROM url WHERE full_url = ?");
+    if (!$res->execute([$full])) {
+        echo json_encode($res->errorInfo());
+        return;
+    }
 
+    $rows = $res->fetchAll();
+
+    if (empty($rows)) {
+        add($db);
+    } else {
+        edit($db);
+    }
+
+}
 
 
 function add($db) {
@@ -56,4 +78,16 @@ function search($db) {
     echo json_encode(empty($rows) ? [] : $rows);
 }
 
+function getFullUrl($db) {
+    $cut_text = $_REQUEST['cut_url'];
+    $res = $db->prepare("SELECT full_url FROM url WHERE cut_url = ?");
+    if (!$res->execute([$cut_text])) {
+        echo json_encode($res->errorInfo());
+        return;
+    }
+
+    $rows = $res->fetchAll();
+
+    echo json_encode(empty($rows) ? [] : $rows);
+}
 //echo  json_encode(['GET' => var_dump($_GET), 'POST' => var_dump($_POST), 'REUQEST' => var_dump($_REQUEST)]);

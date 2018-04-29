@@ -1,44 +1,187 @@
-
 <html>
 
-    <head>
+<head>
 
-      <title> URL Shortenerr </title>
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap-theme.min.css"> 
-        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script> 
-        <link href="style.css" rel="stylesheet">
-      </head>
+  <title> URL Shortenerr </title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm"
+    crossorigin="anonymous">
+  <link href="style.css" rel="stylesheet">
+</head>
 
-    <body> 
-        <div class="left">
-          <div class="left1">
-        <h1>URL Shortener</h1>
-      </div>
-      <div class="left2">
-        Hello! This service will help you turn your long ugly into a short and convenient link that you can share with friends and colleagues.<br>
+<body>
+
+ <div class="content">
+    <div class="form">
+        <h1></h1>
+    
+        <div class="field">
+          <input id='full_url' type="text" placeholder="Input cut URL...">
+          <!-- <p class="help-set-full">Set full url</p> -->
+    
+          <button id='perfom_full' class="btn">Perform</button>
+        </div>
+    
+        <input id='cut_url' type="text" placeholder="Input cut URL...">
+        <button id='save_btn' class="btn">Save</button>
+    
+        <div class="search_container">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th scope="col">Full url</th>
+                <th scope="col">Cut url</th>
+              </tr>
+            </thead>
+            <tbody id='tbody'>
+    
+            </tbody>
+          </table>
         </div>
       </div>
-  <div class="right">
-
-    <div class="right1">
-      In this field, write down the long link that you want to shorten
-    <form>
-      <input type="text" placeholder="input URL...">
-      <button type="submit" class="btn">Perform</button>
-    </form>
-  </div>
-
-  <div class="right2">
-      This field displays the result, or you can specify your own short link
-      <form>
-        <input type="text" placeholder="Input cut URL...">
-        <button type="submit" class="btn">Perform</button>
-      </form>
-    </div>
-
-  </div>
-    </body>
-   
-</html>
     
+      </div>
+ </div>
+</body>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q"
+  crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
+  crossorigin="anonymous"></script>
+<script src="./config.js"></script>
+
+
+<script>
+  let uniqCut = false;
+
+  function str_rand() {
+    var result = '';
+    var words = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
+    var max_position = words.length - 1;
+    for (i = 0; i < 7; ++i) {
+      position = Math.floor(Math.random() * max_position);
+      result = result + words.substring(position, position + 1);
+    }
+    return result;
+  }
+
+  function setTable(html) {
+    $('#tbody').html(html);
+  }
+
+  function updateTable() {
+    const full = $('#full_url').val();
+
+    if (!full) {
+      setTable('');
+      return;
+    }
+
+    $.ajax({
+      url: `${BASE_URL}/backend/url.php`,
+      data: `cmd=search&full=${full}`,
+      success: (response) => {
+        const result = JSON.parse(response);
+
+        if (result.length === 0) {
+          setTable('');
+          return;
+        }
+
+        const rows = result.map(row => {
+          return ` <tr>
+                      <th scope="row">${row.full_url}</th>
+                      <td>${row.cut_url}</td>
+                   </tr>`
+        });
+
+        setTable(rows.join());
+      }
+    });
+  }
+
+  const invalidClassName = 'form-control is-invalid';
+
+  $('#perfom_full').click(() => {
+    const full_url = $('#full_url');
+    const text = full_url.val();
+    full_url.removeClass(invalidClassName);
+
+    if (!text) {
+      full_url.addClass(invalidClassName);
+      $('#cut_url').val(null);
+      return;
+    }
+
+    $('#cut_url').val(`${BASE_URL}/${str_rand()}`);
+  });
+
+  $('#save_btn').click(() => {
+    const full_url = $('#full_url');
+    const cut_url = $('#cut_url');
+    const full = full_url.val();
+    const cut = cut_url.val();
+
+    full_url.removeClass(invalidClassName);
+    cut_url.removeClass(invalidClassName);
+
+    if (!full) {
+      full_url.addClass(invalidClassName);
+    }
+
+    if (!cut) {
+      cut_url.addClass(invalidClassName);
+    }
+
+    if (!(full && cut)) {
+      return;
+    }
+
+
+    const checkUniqCut = (callback) => {
+      const cut_url = $('#cut_url');
+      const cut = cut_url.val();
+      cut_url.removeClass(invalidClassName);
+      $.ajax({
+        url: `${BASE_URL}/backend/url.php`,
+        data: `cmd=get_full_url&cut_url=${cut}`,
+        success: (response) => {
+          const result = JSON.parse(response);
+          if ((result.length === 0) && (callback)) {
+            callback();
+            return;
+          }
+
+          if (result.length !== 0) {
+            cut_url.addClass(invalidClassName);
+          }
+
+        }
+      });
+    }
+
+    checkUniqCut(() => {
+      $.ajax({
+        url: `${BASE_URL}/backend/url.php`,
+        data: `cmd=update&cut=${cut}&full=${full}`,
+        success: (response) => {
+          if (response === 'Success') {
+            alert('saved');
+            updateTable();
+          }
+        }
+      });
+    });
+  });
+
+  $('#full_url').on('input', function (e) {
+    updateTable();
+  })
+
+  $('#cut_url').on('input', function (e) {
+
+  })
+
+</script>
+
+
+</html>
